@@ -1,5 +1,8 @@
 package zorklike;
 
+import zorklike.Zorklike;
+import zorklike.Room;
+import zorklike.Item;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -67,25 +70,13 @@ public class Dictionary {
         }
         return false;
     }
-    public int searchItems(ArrayList<String> itemName) {
-		//2 for trying to open more than one things
-		//3 for trying to open something with something else that can be opened
+    public boolean searchItems(String itemName) {
         for (int i=0;i<itemNames.length;i++) {
-					if (itemName.size() > 1) {
-						for (int y=0;y<itemName.size();y++) {
-							if (!Zorklike.containsExactWord(itemName.get(y),itemNames[i])) {
-								return 2;
-							}
-						}
-						return 1;
-					}
-					else {
-            if (Zorklike.containsExactWord(itemName.get(0),itemNames[i])) {
-                return 1;
+            if (Zorklike.containsExactWord(itemName,itemNames[i])) {
+                return true;
             }
-					}
         }
-        return 0;
+        return false;
     }
     public boolean searchFurniture(String furnName) {
         for (int i=0;i<furnNames.length;i++) {

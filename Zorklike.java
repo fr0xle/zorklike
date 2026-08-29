@@ -5,6 +5,9 @@ package zorklike;
 //actually that should be working fine hold on im looking into it
 
 //import statements
+import zorklike.Room;
+import zorklike.Dictionary;
+import zorklike.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
@@ -19,11 +22,11 @@ public class Zorklike {
 	static Scanner scan;
 	static Dictionary dictionary;
 	static enum Type {
-		KEY,
-		CD,
-		WEAPON,
-		RANDOM,
-	};
+        KEY,
+        CD,
+        WEAPON,
+		RANDOM
+    };
 	public static List<Item> inventory;
 	public static List<Room> rooms;
 	//abstract command method
@@ -82,7 +85,7 @@ public class Zorklike {
 		rooms.add(new Room("testroom2","testing room travel","yuhhhh",new Connection("back","testroom",true,"key","axe")));
 		//testroom2 items
 		rooms.get(1).addFurniture(new Furniture("metal chest","a metal chest","A locked iron chest sits in the center of the room. You need the color gray to unlock this.",true,false,new Item(Type.RANDOM,"lint","ball of lint","A ball of lint",false,0,0,null)).addRequirements("gray"));
-
+		
 		// behind you, testroom
 
 		//testroom3
@@ -94,10 +97,11 @@ public class Zorklike {
 
 		//init dictionary
 		dictionary = new Dictionary();
-
+		List<String> movementL = Arrays.asList(Dictionary.directions);
+		
 		//command and populate hashmap
 		//inventory
-		Command checkInventory = (String action, ArrayList<String> targets, ArrayList<String> objects) -> {
+		Command checkInventory = (String aciton, String target, String object) -> {
 			if (inventory.size()==0) {
 				System.out.println("Peeking into your backpack, you find nothing.");
 				return 0;
@@ -120,9 +124,9 @@ public class Zorklike {
 		};
 		commandHashMap.put("inventory",checkInventory);
 		commandHashMap.put("backpack",checkInventory);
-
+		
 		//check items
-		Command checkItemList = (String action, ArrayList<String> targets, ArrayList<String> objects) -> {
+		Command checkItemList = (String action, String target, String object) -> {
 			for (String itemName : dictionary.getItemNames()) {
 				System.out.println(itemName);
 			}
@@ -131,35 +135,27 @@ public class Zorklike {
 		commandHashMap.put("list",checkItemList);
 
 		//look around
-		Command lookAround = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
+		Command lookAround = (String action, String object, String target) -> {
 			curRoom[0].getInfo(null);
 			return 0;
 		};
 		commandHashMap.put("around",lookAround);
 
 		//movement using go or move
-		Command moveRooms = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
-			if (targets!=null) {
-				if (targets.size() > 1) {
-					System.out.println(redBackground + "Hey Sonic, you can only travel to one room per command. Slow down. I will only move you to the first room in that list." + resetFormatting);
-				}
+		Command moveRooms = (String action, String object, String target) -> {
+			if (target!=null) {
 				Connection[] connectionList = curRoom[0].getConnections();
 				for (Connection connect : connectionList) {
 					// multi word target gets here then just doesnt print anything.... why???
-					if (containsExactWord(targets.get(0),connect.getName())) {
+					if (containsExactWord(target,connect.getName())) {
 						if (connect.isOpen()) {
-							boolean roomExists = false;
 							for (Room room : rooms) {
-								if (containsExactWord(targets.get(0),room.getName())) {
-									roomExists = true;
+								if (containsExactWord(target,room.getName())) {
 									curRoom[0] = room;
 									System.out.print("You are now in " + room.getName() + ". " + room.getDescription() + ".\n");
 									curRoom[0].getInfo(null);
 									return 0;
 								}
-							}
-							if (!roomExists) {
-								System.out.println(redBackground + "ERROR: ROOM " + targets.get(0) + " DOES NOT EXIST." + resetFormatting);
 							}
 						}
 						else {
@@ -172,7 +168,7 @@ public class Zorklike {
 							return 0;
 						}
 					}
-					else if (targets==null) {
+					else if (target==null) {
 						System.out.println("...Where?");
 						return 0;
 					}
@@ -184,7 +180,7 @@ public class Zorklike {
 		commandHashMap.put("go",moveRooms);
 		commandHashMap.put("move",moveRooms);
 		//movement using directions
-		Command moveDirection = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
+		Command moveDirection = (String action, String object, String target) -> {
 			String act = action;
 			if (act.equals("foreward") || act.equals("forewards")) {
 				act = "front";
@@ -227,60 +223,33 @@ public class Zorklike {
 		}
 
 		//grabbing items
-		Command grabItem = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
+		Command grabItem = (String action, String object, String target) -> {
 			List<Furniture> furnl = curRoom[0].getFurnL();
 			for (int x=0;x<furnl.size();x++) {
 				Furniture curfurn = furnl.get(x);
 				List<Item> iteml = curfurn.getItemL();
 				List<String> requirements = curfurn.getRequirements();
 				if (requirements==null) {
-					// the object and target for loops cant be in here u gotta move ts around theyre returning an error on i
 					for (int i=0;i<iteml.size();i++) {
 						Item item = iteml.get(i);
-						boolean itemInRoom = false;
-						for (String object : objects) {
-							if (containsExactWord(object,item.getName())) {
-								inventory.add(item);
-								curfurn.getItemL().remove(i);
-								i--;
-								System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
-								itemInRoom = true;
-							}
-						}
-						if (objects==null) {
-							for (String target : targets) {
-								if (containsExactWord(target,item.getName())) {
-									inventory.add(item);
-									curfurn.getItemL().remove(i);
-									i--;
-									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
-									itemInRoom = true;	
-								}
-								if (!itemInRoom) {
-									System.out.println(redBackground + "There is no " + item.getName() + " in this room." + resetFormatting);
-								}
-							}
-						}
-						else {
-							for (String object : objects) {
-								if (containsExactWord(object,item.getName())) {
-									inventory.add(item);
-									System.out.println(curfurn.getItemL());
-									curfurn.getItemL().remove(i);
-									i--;
-									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
-									itemInRoom = true;
-								}
-								if (!itemInRoom) {
-									System.out.println(redBackground + "There is no " + item.getName() + " in this room." + resetFormatting);
-								}
-							}
+						if (containsExactWord(object,item.getName()) || containsExactWord(target,item.getName())) {
+							inventory.add(item);
+							curfurn.getItemL().remove(i);
+							i--;
+							System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
+							return 0;
 						}
 					}
 				}
 				else {
 					System.out.println("It's locked. No can do, buckaroo.");
 				}
+			}
+			if (dictionary.searchItems(object)) {
+				System.out.println(redBackground + "There is no " + object + " in this room." + resetFormatting);
+			}
+			else {
+				System.out.println(redBackground + "Huh??? That doesn't exist dude... T-T" + resetFormatting);
 			}
 			return 0;
 		};
@@ -289,40 +258,30 @@ public class Zorklike {
 		}
 
 		//examine an object/item
-		Command examine = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
-			if (!(targets==null && objects==null)) {
-				//examining an object in the inventory
-				if (targets==null) {
-					for (String object : objects) {
-						for (Item item : inventory) {
-							if (containsExactWord(object,item.getName())) {
-								System.out.println(item.getExtendedDescription());
-							}
-							else {
-								System.out.println("The " + object + " isn't in your inventory, sorry!");
-							}
+		Command examine = (String action, String object, String target) -> {
+			if (!(target==null && object==null)) {
+				if (target==null) {
+					for (Item item : inventory) {
+						if (containsExactWord(object,item.getName())) {
+							System.out.println(item.getExtendedDescription());
+							return 0;
 						}
 					}
+					System.out.println("That item isn't in your inventory... Sorry!");
 				}
-				//examining a room
-				else if (targets!=null) {
-					boolean checkRooms = dictionary.searchRooms(targets.get(0).toLowerCase());
+				else if (target!=null) {
+					boolean checkRooms = dictionary.searchRooms(target.toLowerCase());
 					boolean roomSuccess = false;
-					boolean checkFurniture = dictionary.searchFurniture(targets.get(0).toLowerCase());
+					boolean checkFurniture = dictionary.searchFurniture(target.toLowerCase());
 					boolean furnSuccess = false;
-					//examining rooms
 					if (checkRooms) {
-						if (targets.size() > 1) {
-							System.out.println("You've only got one set of eyes, so you can only peer in one room. I'll only let you look at the first room you listed.");
-						}
 						for (Room room : rooms) {
-							if (containsExactWord(targets.get(0),room.getName())) {
+							if (containsExactWord(target,room.getName())) {
 								room.getInfo(curRoom[0].getConnections());
 								roomSuccess = true;
 							}
 						}
 					}
-					//examining furniture
 					else if (checkFurniture) {
 						List<Furniture> furnl = new ArrayList<Furniture>();
 						for (Room room : rooms) {
@@ -331,80 +290,79 @@ public class Zorklike {
 								furnl.add(furn);
 							}
 						}
-						for (String target : targets) {
-							boolean isInRoom = false;
-							for (Furniture furn : furnl) {
-								if (containsExactWord(target,furn.getName())) {
-									for (Furniture furnr : curRoom[0].getFurnL()) {
-										if (containsExactWord(furn.getName(),furnr.getName())) {
-											isInRoom = true;
-											System.out.println("You examine the " + furn.getName() + ":");
-											System.out.println("    " + furn.getExtendedDescription());
-											if (!furn.isOpen()) {
-												System.out.println("    You need the following to open it:");
-												int i=0;
-												for (String req : furn.getRequirements()) {
-													i++;
-													System.out.println("        " + boldBlueColor + i + ": " + resetFormatting + req);
-												}
+						for (Furniture furn : furnl) {
+							if (containsExactWord(target,furn.getName())) {
+								for (Furniture furnr : curRoom[0].getFurnL()) {
+									if (containsExactWord(furn.getName(),furnr.getName())) {
+										System.out.println("You examine the " + furn.getName() + ":");
+										System.out.println("    " + furn.getExtendedDescription());
+										if (!furn.isOpen()) {
+											System.out.println("    You need the following to open it:");
+											int i=0;
+											for (String req : furn.getRequirements()) {
+												i++;
+												System.out.println("        " + boldBlueColor + i + ": " + resetFormatting + req);
 											}
-											List<Item> citeml = furn.getItemL();
-											if (furn.isOpen()) {
-												if (citeml!=null) {
-													List<String> tempNameStorage = new ArrayList<String>();
-													for (Item it : citeml) {
-														String itnm = it.getName();
-														List<String> aOrAn = new ArrayList<String>(Arrays.asList(itnm.split("")));
-														if (aOrAn.get(0).toLowerCase().equals("a")||aOrAn.get(0).toLowerCase().equals("e")||aOrAn.get(0).toLowerCase().equals("i")||aOrAn.get(0).toLowerCase().equals("o")||aOrAn.get(0).toLowerCase().equals("u")) {
-															tempNameStorage.add("an " + itnm);
+										}
+										List<Item> citeml = furn.getItemL();
+										if (furn.isOpen()) {
+											if (citeml!=null) {
+												List<String> tempNameStorage = new ArrayList<String>();
+												for (Item it : citeml) {
+													String itnm = it.getName();
+													List<String> aOrAn = new ArrayList<String>(Arrays.asList(itnm.split("")));
+													if (aOrAn.get(0).toLowerCase().equals("a")||aOrAn.get(0).toLowerCase().equals("e")||aOrAn.get(0).toLowerCase().equals("i")||aOrAn.get(0).toLowerCase().equals("o")||aOrAn.get(0).toLowerCase().equals("u")) {
+                            							tempNameStorage.add("an " + itnm);
+                        							}
+                        							else {
+                            							tempNameStorage.add("a " + itnm);
+                        							}
+												}
+												if (tempNameStorage.size()>1) {
+													tempNameStorage.set(tempNameStorage.size()-1,"and " + (tempNameStorage.get(tempNameStorage.size()-1)));
+												}
+												else if (tempNameStorage.size()>2) {
+													if (furn.isContainer()) {
+														System.out.println("    Inside, there is " + String.join(", ",tempNameStorage) + ".");
+													}
+													else {
+														System.out.println("    On top, there is " + String.join(", ",tempNameStorage) + ".");
+													}
+												}
+												else {
+													if (furn.isContainer()) {
+														if (tempNameStorage.size()>0){
+															System.out.println("    Inside, there is " + String.join(" ",tempNameStorage) + ".");
 														}
 														else {
-															tempNameStorage.add("a " + itnm);
-														}
-													}
-													if (tempNameStorage.size()>1) {
-														tempNameStorage.set(tempNameStorage.size()-1,"and " + (tempNameStorage.get(tempNameStorage.size()-1)));
-													}
-													else if (tempNameStorage.size()>2) {
-														if (furn.isContainer()) {
-															System.out.println("    Inside, there is " + String.join(", ",tempNameStorage) + ".");
-														}
-														else {
-															System.out.println("    On top, there is " + String.join(", ",tempNameStorage) + ".");
+															System.out.println("There is nothing inside.");
 														}
 													}
 													else {
-														if (furn.isContainer()) {
-															if (tempNameStorage.size()>0){
-																System.out.println("    Inside, there is " + String.join(" ",tempNameStorage) + ".");
-															}
-															else {
-																System.out.println("There is nothing inside.");
-															}
+														if (tempNameStorage.size()>0) {
+															System.out.println("    On top, there is " + String.join(" ",tempNameStorage) + ".");
 														}
 														else {
-															if (tempNameStorage.size()>0) {
-																System.out.println("    On top, there is " + String.join(" ",tempNameStorage) + ".");
-															}
-															else {
-																System.out.println("There is nothing on it.");
-															}
+															System.out.println("There is nothing on it.");
 														}
 													}
 												}
 											}
-											else {
-												System.out.println("    You try to peer inside, but it is closed.");
-											}
-											furnSuccess = true;
 										}
+										else {
+											System.out.println("    You try to peer inside, but it is closed.");
+										}
+										furnSuccess = true;
 									}
 								}
 							}
-							if (!isInRoom)	{
-								System.out.println("There is no " + target + " in this room.");
-							}
 						}
+					}
+					if (checkRooms && !roomSuccess) {
+						System.out.println(redBackground + "Unfortunately, that room seems to not exist." + resetFormatting);
+					}
+					else if (checkFurniture && !furnSuccess) {
+						System.out.println(redBackground + "There is no " + target + " in this room." + resetFormatting);
 					}
 				}
 			}
@@ -416,14 +374,14 @@ public class Zorklike {
 		commandHashMap.put("examine",examine);
 		commandHashMap.put("look",examine);
 		commandHashMap.put("peer",examine);
-
+		
 		//find command
-		Command find = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
-			if (objects==null && targets==null) {
+		Command find = (String action, String object, String target) -> {
+			if (object==null && target==null) {
 				System.out.println("Find... what, exactly?");
 			}
 			else {
-				System.out.println("Not telling!!!! :D");
+				System.out.println("I already told you where that is, idiot.");
 			}
 			return 0;
 		};
@@ -432,28 +390,22 @@ public class Zorklike {
 		//open/unlocking
 		// ok so what ya gotta do (because items and rooms can be both objects and items) is this
 		/* 
-			 if the target is an openable and there is no object, search entire inventory for required items and ask the user if they want to use all the items
-			 if object is item and target is openable, use the object to try and open the target
-			 if target is openable and item is object, use the target to try and open the object
-			 also add logic for already unlocked doors
-			 */
+			if the target is an openable and there is no object, search entire inventory for required items and ask the user if they want to use all the items
+			if object is item and target is openable, use the object to try and open the target
+			if target is openable and item is object, use the target to try and open the object
+			also add logic for already unlocked doors
+		*/
 		Command open = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
-			//there can only be one unlocker
-			//therefore, if there are more than one unlockable, return that you cant do that.
-			//if there is at least one unlockable in the total list of targets, return the same error as before
-			int itemIsTarget = dictionary.searchItems(targets);
-			String openable = "";
-			ArrayList<String> unlockers = new ArrayList<>();
-			if (itemIsTarget==1) {
-				unlockers = targets;
-				openable = objects.get(0);
+			boolean itemIsTarget = dictionary.searchItems(target);
+			String openable;
+			String unlocker;
+			if (itemIsTarget) {
+				unlocker = target;
+				openable = object;
 			}
-			else if (itemIsTarget==0) {
-				unlockers = objects;
-				openable = targets.get(0);
-			}
-			else if (itemIsTarget==2) {
-				System.out.println("Please refrain from using openable objects as keys.");
+			else {
+				unlocker = object;
+				openable = target;
 			}
 			boolean checkRooms = dictionary.searchRooms(openable);
 			boolean checkFurniture = dictionary.searchFurniture(openable);
@@ -463,35 +415,35 @@ public class Zorklike {
 				for (Connection connection : clist) {
 					if (containsExactWord(openable,connection.getName())) {
 						if (!connection.isOpen()) {
-							if (unlockers!=null) {
+							if (unlocker!=null) {
 								//if user specifies what to use to open the door
-								for (String unlocker : unlockers) {
-									boolean itemInInv = false;
-									for (Item item : inventory) {
-										if (containsExactWord(unlocker,item.getName())) {
-											itemInInv = true;
-											if (connection.useItem(unlocker)) {
-												System.out.print("You successfully used the " + unlocker + ".");	
+								boolean itemInInv = false;
+								for (Item item : inventory) {
+									if (containsExactWord(unlocker,item.getName())) {
+										itemInInv = true;
+										if (connection.useItem(unlocker)) {
+											System.out.print("You successfully used the " + unlocker + ".");
+											if (connection.getRequirements().size()!=0) {
+												System.out.println("\nThis door still needs the following items to open:");
+												for (String requirement : connection.getRequirements()) {
+													System.out.println(requirement);
+												}
 											}
 											else {
-												System.out.println("You can't use the" + unlocker + " in that way.");
+												System.out.println(" The door is now open.");
 											}
+											return 0;
+										}
+										else {
+											System.out.println("You can't use that item in that way.");
+											return 0;
 										}
 									}
-									if (!itemInInv) {
-										System.out.println("You look through your backpack, but cannot find the " + unlocker + ".");
-									}
 								}
-								if (connection.getRequirements().size()!=0) {
-									System.out.println("\nThis door still needs the following items to open:");
-									for (String requirement : connection.getRequirements()) {
-										System.out.println(requirement);
-									}
+								if (!itemInInv) {
+									System.out.println("You look through your backpack for that item, but cannot find it.");
+									return 0;
 								}
-								else {
-									System.out.println(" The door is now open.");
-								}
-								return 0;	
 							}
 							else {
 								//if the user doesn't specify, check inventory for required items and use them (PLEASE ADD A CONFIRMATION MESSAGE SO THE USER DOESNT GET RID OF ITEMS THEY WANT FOR SOMETHING ELSE)
@@ -539,36 +491,36 @@ public class Zorklike {
 				for (Furniture furn : furnl) {
 					if (containsExactWord(openable, furn.getName())) {
 						if (!furn.isOpen()) {
-							if (unlockers!=null) {
+							if (unlocker!=null) {
 								//if user specifies what to use to open the furniture
-								for (String unlocker : unlockers) {
-									boolean itemInInv = false;
-									for (Item item : inventory) {
-										if (containsExactWord(unlocker,item.getName())) {
-											itemInInv = true;
-											System.out.println(unlocker);
-											if (furn.useItem(unlocker)) {
-												System.out.print("You successfully used the " + unlocker + ".");
+								boolean itemInInv = false;
+								for (Item item : inventory) {
+									if (containsExactWord(unlocker,item.getName())) {
+										itemInInv = true;
+										System.out.println(unlocker);
+										if (furn.useItem(unlocker)) {
+											System.out.print("You successfully used the " + unlocker + ".");
+											if (furn.getRequirements().size()!=0) {
+												System.out.println("\nThis " + furn.getName() + " still needs the following items to open:");
+												for (String requirement : furn.getRequirements()) {
+													System.out.println(requirement);
+												}
 											}
 											else {
-												System.out.println("You can't use the " + unlocker + " in that way.");
+												System.out.println(" The " + furn.getName() + " is now open.");
 											}
+											return 0;
+										}
+										else {
+											System.out.println("You can't use that item in that way.");
+											return 0;
 										}
 									}
-									if (!itemInInv) {
-										System.out.println("You search through your backpack for the " + unlocker + ", but you cannot find it.");
-									}
 								}
-								if (furn.getRequirements().size()!=0) {
-									System.out.println("\nThis " + furn.getName() + " still needs the following items to open:");
-									for (String requirement : furn.getRequirements()) {
-										System.out.println(requirement);
-									}
+								if (!itemInInv) {
+									System.out.println("You search through your backpack for that item, but you cannot find it.");
+									return 0;
 								}
-								else {
-									System.out.println(" The " + furn.getName() + " is now open.");
-								}
-								return 0;
 							}
 							else {
 								List<String> reqItems = new ArrayList<String>();
@@ -617,7 +569,7 @@ public class Zorklike {
 		//game running
 		while (run) {
 			//input
-
+			
 			// action
 			String action = null;
 
@@ -656,9 +608,9 @@ public class Zorklike {
 				}
 				// remove unneccessary words (highkey forgot how this code works idk man)
 				tokenized.removeIf(token ->
-						Arrays.stream(Dictionary.useless)
+					Arrays.stream(Dictionary.useless)
 						.anyMatch(u -> u.equalsIgnoreCase(token))
-						);
+				);
 				boolean objAndTarg = false;
 				// if there is a splitter word, that means there is an object and a target in the sentence
 				for (String item : tokenized) {
@@ -701,72 +653,53 @@ public class Zorklike {
 				}
 				// if there is only an object or a target
 				else {
-					boolean checkRooms = dictionary.searchRooms(tokenized.get(0).toLowerCase());
-					boolean checkItems = false;
-					if (tokenized.size()>0) {
-						if (dictionary.searchItems(tokenized) == 0) {
-							checkItems = false;
-						}
-						else if (dictionary.searchItems(tokenized) == 1 || dictionary.searchItems(tokenized) == 2) {
-							checkItems = true;
-						}
+					ArrayList<String> tokenList = new ArrayList<String>();
+					for (String token : tokenized) {
+						tokenList.add(token);
 					}
-					boolean checkFurniture = false;
-					if (tokenized.size()>1) {
-						checkFurniture = dictionary.searchFurniture(tokenized.get(0).toLowerCase());
-					}
-					if (checkFurniture && tokenized.size()>1) {
-						System.out.println("You can only interact with one piece of furniture at a time.");
-						//yea, you tell em!
-					}
-					System.out.println(checkRooms);
+					String token = String.join(" ",tokenList);
+					boolean checkRooms = dictionary.searchRooms(token.toLowerCase());
+					boolean checkItems = dictionary.searchItems(token.toLowerCase());
+					boolean checkFurniture = dictionary.searchFurniture(token.toLowerCase());
+
 					if (checkRooms) {
-						for (String token : tokenized) {
-							targets.add(token.toLowerCase());
-						}
+						targets.add(token.toLowerCase());
 					}
 					else if (checkItems) {
-						for (String token : tokenized) {
-							objects.add(token.toLowerCase());
-						}
+						object.add(token.toLowerCase());
 					}
 					else if (checkFurniture) {
-						for (String token : tokenized) {
-							targets.add(token.toLowerCase());
-						}
+						targets.add(token.toLowerCase());
 					}
-					for (String token : tokenized) {
-						if (token.equalsIgnoreCase("around")) {
-							action = "around";
-						}
-						else if (token.equalsIgnoreCase("foreward") || token.equalsIgnoreCase("front") || token.equalsIgnoreCase("forewards")) {
-							action = "front";
-						}
-						else if (token.equalsIgnoreCase("backward") || token.equalsIgnoreCase("back") || token.equalsIgnoreCase("backwards")) {
-							action = "back";
-						}
-						else if (token.equalsIgnoreCase("left")) {
-							action = "left";
-						}
-						else if (token.equalsIgnoreCase("right")) {
-							action = "right";
-						}
-						else if (token.equalsIgnoreCase("inventory")) {
-							action = "inventory";
-						}
-						else if (token.equalsIgnoreCase("backpack")) {
-							action = "inventory";
-						}
-						else if (token.equalsIgnoreCase("door")) {
-							targets.add("door");
-						}
-						else if (token.equalsIgnoreCase("backpack")) {
-							action = "backpack";
-							objects.clear();
-							targets.clear();
-						}
+					else if (token.equalsIgnoreCase("around")) {
+						action = "around";
 					}
-
+					else if (token.equalsIgnoreCase("foreward") || token.equalsIgnoreCase("front") || token.equalsIgnoreCase("forewards")) {
+						action = "front";
+					}
+					else if (token.equalsIgnoreCase("backward") || token.equalsIgnoreCase("back") || token.equalsIgnoreCase("backwards")) {
+						action = "back";
+					}
+					else if (token.equalsIgnoreCase("left")) {
+						action = "left";
+					}
+					else if (token.equalsIgnoreCase("right")) {
+						action = "right";
+					}
+					else if (token.equalsIgnoreCase("inventory")) {
+						action = "inventory";
+					}
+					else if (token.equalsIgnoreCase("backpack")) {
+						action = "inventory";
+					}
+					else if (token.equalsIgnoreCase("door")) {
+						targets.add("door");
+					}
+					else if (token.equalsIgnoreCase("backpack")) {
+						action = "backpack";
+						objects.clear();
+						targets.clear();
+					}
 				}
 
 				//response
@@ -774,22 +707,14 @@ public class Zorklike {
 				System.out.println("action: " + action);
 				System.out.println("target(s):");
 				for (String target : targets) {
-					System.out.print(target + targets.size() + ",");
+					System.out.println(target);
 				}
-				System.out.println();
 				System.out.println("object(s):");
 				for (String object : objects) {
-					System.out.print(object + objects.size() + ",");
+					System.out.println(object);
 				}
-				System.out.println();
 				//command
 				System.out.print(resetFormatting);
-				if (objects.size()==0) {
-					objects=null;
-				}
-				if (targets.size()==0) {
-					targets=null;
-				}
 				commandHashMap.get(action).command(action,objects,targets);
 			}
 			else {
