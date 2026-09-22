@@ -238,15 +238,6 @@ public class Zorklike {
 					for (int i=0;i<iteml.size();i++) {
 						Item item = iteml.get(i);
 						boolean itemInRoom = false;
-						for (String object : objects) {
-							if (containsExactWord(object,item.getName())) {
-								inventory.add(item);
-								curfurn.getItemL().remove(i);
-								i--;
-								System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
-								itemInRoom = true;
-							}
-						}
 						if (objects==null) {
 							for (String target : targets) {
 								if (containsExactWord(target,item.getName())) {
@@ -265,6 +256,7 @@ public class Zorklike {
 							for (String object : objects) {
 								if (containsExactWord(object,item.getName())) {
 									inventory.add(item);
+									System.out.println(inventory.size());
 									System.out.println(curfurn.getItemL());
 									curfurn.getItemL().remove(i);
 									i--;
