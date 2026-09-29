@@ -87,11 +87,6 @@ public class Furniture {
         return isOpen;
     }
     public List<Item> getItemL() {
-        if (iteml != null) {
-            if (iteml.size() == 0) {
-                iteml = null;
-            }
-        }
         return iteml;
     }
     public List<String> getRequirements() {

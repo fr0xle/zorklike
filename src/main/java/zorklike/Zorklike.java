@@ -232,40 +232,42 @@ public class Zorklike {
 			for (int x=0;x<furnl.size();x++) {
 				Furniture curfurn = furnl.get(x);
 				List<Item> iteml = curfurn.getItemL();
+				if (iteml.size()==0) {
+					System.out.println("No more items to pick up here, sorry.");
+				}
 				List<String> requirements = curfurn.getRequirements();
 				if (requirements==null) {
 					// the object and target for loops cant be in here u gotta move ts around theyre returning an error on i
-					for (int i=0;i<iteml.size();i++) {
-						Item item = iteml.get(i);
+					for (Iterator<Item> i=iteml.iterator();i.hasNext();) {
+						Item item = i.next(); 
 						boolean itemInRoom = false;
+						// gotta fix ts gang earlybreak is activating if only one item is gone thru
 						if (objects==null) {
 							for (String target : targets) {
 								if (containsExactWord(target,item.getName())) {
 									inventory.add(item);
-									curfurn.getItemL().remove(i);
-									i--;
+									i.remove();
 									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
-									itemInRoom = true;	
+									itemInRoom = true;
+									break;
 								}
-								if (!itemInRoom) {
-									System.out.println(redBackground + "There is no " + item.getName() + " in this room." + resetFormatting);
-								}
+							}
+							if (!itemInRoom) {
+								System.out.println(redBackground + "There is no " + item.getName() + " in this room." + resetFormatting);
 							}
 						}
 						else {
 							for (String object : objects) {
 								if (containsExactWord(object,item.getName())) {
 									inventory.add(item);
-									System.out.println(inventory.size());
-									System.out.println(curfurn.getItemL());
-									curfurn.getItemL().remove(i);
-									i--;
+									i.remove();
 									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
 									itemInRoom = true;
+									break;
 								}
-								if (!itemInRoom) {
-									System.out.println(redBackground + "There is no " + item.getName() + " in this room." + resetFormatting);
-								}
+							}
+							if (!itemInRoom) {
+								System.out.println(redBackground + "There is no " + item.getName() + " in this room." + resetFormatting);
 							}
 						}
 					}
@@ -651,12 +653,18 @@ public class Zorklike {
 						Arrays.stream(Dictionary.useless)
 						.anyMatch(u -> u.equalsIgnoreCase(token))
 						);
+				//remove list words (and and ,)
+				tokenized.removeIf(token ->
+						Arrays.stream(Dictionary.flags)
+						.anyMatch(u -> u.equalsIgnoreCase(token))
+						);
 				boolean objAndTarg = false;
 				// if there is a splitter word, that means there is an object and a target in the sentence
 				for (String item : tokenized) {
 					for (String compare : Dictionary.splitters) {
 						if (item.equalsIgnoreCase(compare)) {
 							objAndTarg = true;
+							tokenized.remove(item);
 						}
 					}
 				}
@@ -693,7 +701,10 @@ public class Zorklike {
 				}
 				// if there is only an object or a target
 				else {
-					boolean checkRooms = dictionary.searchRooms(tokenized.get(0).toLowerCase());
+					boolean checkRooms = false; 
+					if (tokenized.size()>0) {
+						checkRooms = dictionary.searchRooms(tokenized.get(0).toLowerCase());
+					}
 					boolean checkItems = false;
 					if (tokenized.size()>0) {
 						if (dictionary.searchItems(tokenized) == 0) {

@@ -67,10 +67,9 @@ public class Room {
         List<String> iteml = new ArrayList<String>();
         for (Furniture furn : furnl) {
             List<Item> citeml = furn.getItemL();
-            String name = furn.getName();
-            String desc = furn.getDescription();
+            String extdesc = furn.getExtendedDescription();
             if (furn.isOpen()) {
-                if (citeml!=null) {
+                if (citeml.size()>0) {
                     List<String> tempNameStorage = new ArrayList<String>();
                     for (Item it : citeml) {
                         String itnm = it.getName(); 
@@ -103,11 +102,11 @@ public class Room {
                     }
                 }
                 else {
-                    iteml.add(desc);
+                    iteml.add(extdesc);
                 }
             }
             else {
-                iteml.add(desc);
+                iteml.add(extdesc);
             }
         }
         if (connects!=null) {
