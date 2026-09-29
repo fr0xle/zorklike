@@ -11,12 +11,12 @@ public class Dictionary {
     public static String[] useless = {"into","to","an","a","me","my","i","your","you","the","mine","at","the"};
     public static String[] splitters = {"with","in","inside","into","on","onto","off"};
     public static String[] flags = {"and",",","all"};
-	public static String[] movement = {"go","move","foreward","front","forewards","right","left","back","backward","backwards"};
+	  public static String[] movement = {"go","move","foreward","front","forewards","right","left","back","backward","backwards"};
     public static String[] directions = {"foreward","forewards","front","right","left","backward","backwards","back"};
-	public static String[] searching = {"find","search","look","examine","peer"};
-	public static String[] obtaining = {"take","grab","get"};
-	public static String[] objectInteraction = {"open","close","search"};
-	public static String[] inventoryActions = {"drop","inventory","backpack"};
+		public static String[] searching = {"find","search","look","examine","peer"};
+		public static String[] obtaining = {"take","grab","get"};
+	  public static String[] objectInteraction = {"open","close","search"};
+		public static String[] inventoryActions = {"drop","inventory","backpack"};
     public Dictionary() {
         roomNames = new String[Zorklike.rooms.size()];
         for (int i=0;i<Zorklike.rooms.size();i++) {
