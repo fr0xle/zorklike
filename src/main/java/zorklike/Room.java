@@ -1,6 +1,5 @@
 package zorklike;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -143,7 +142,7 @@ public class Room {
             for (String item : iteml) {
                 String[] upp = item.split("");
                 upp[0] = upp[0].toUpperCase();
-                System.out.println("   " + String.join("",upp));
+                System.out.println("   " + String.join("",upp) + ".");
             }
         }
         if (!(connections.length==0||connections==null)) {

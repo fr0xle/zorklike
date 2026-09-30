@@ -237,37 +237,38 @@ public class Zorklike {
 				}
 				List<String> requirements = curfurn.getRequirements();
 				if (requirements==null) {
-					// the object and target for loops cant be in here u gotta move ts around theyre returning an error on i
 					for (Iterator<Item> i=iteml.iterator();i.hasNext();) {
 						Item item = i.next(); 
 						boolean itemInRoom = false;
-						// gotta fix ts gang earlybreak is activating if only one item is gone thru
 						if (objects==null) {
-							for (String target : targets) {
-								if (containsExactWord(target,item.getName())) {
+							for (Iterator<String> y=targets.iterator();y.hasNext();) {
+								if (containsExactWord(y.next(),item.getName())) {
 									inventory.add(item);
 									i.remove();
+									y.remove();
 									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
 									itemInRoom = true;
 									break;
 								}
 							}
-							if (!itemInRoom) {
-								System.out.println(redBackground + "There is no " + item.getName() + " in this room." + resetFormatting);
+							if (!itemInRoom && targets.size()!=0) {
+								System.out.println(redBackground + "There is no " + targets.get(0) + " in this room." + resetFormatting);
 							}
 						}
 						else {
-							for (String object : objects) {
-								if (containsExactWord(object,item.getName())) {
+							for (Iterator<String> y=objects.iterator();y.hasNext();) {
+								if (containsExactWord(y.next(),item.getName())) {
 									inventory.add(item);
 									i.remove();
+									y.remove();
 									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
 									itemInRoom = true;
 									break;
 								}
 							}
-							if (!itemInRoom) {
-								System.out.println(redBackground + "There is no " + item.getName() + " in this room." + resetFormatting);
+							if (!itemInRoom && objects.size()!=0) {
+								System.out.println(redBackground + "There is no " + objects.get(0) + " in this room." + resetFormatting);
+								objects.remove(0);
 							}
 						}
 					}
@@ -624,6 +625,7 @@ public class Zorklike {
 			System.out.print(greenColor + "> ");
 			String input = scan.nextLine();
 			// parser logic
+			// ############ HI HI YOU NEED TO FIX THIS THE PARSER ISNT PUTTING WORDS LIKE "ke" INTO THE TARGETS/OBJECTS LIST WHICH RETURNS AN ERROR FOR COMMANDS LIKE GRAB
 			ArrayList<String> tokenized = new ArrayList<String>(Arrays.asList(input.split(" ")));
 			// delete action and all words before action after setting action variable
 			int index = -1;
@@ -661,6 +663,7 @@ public class Zorklike {
 				boolean objAndTarg = false;
 				// if there is a splitter word, that means there is an object and a target in the sentence
 				for (String item : tokenized) {
+					System.out.println("item: " + item);
 					for (String compare : Dictionary.splitters) {
 						if (item.equalsIgnoreCase(compare)) {
 							objAndTarg = true;
@@ -723,6 +726,7 @@ public class Zorklike {
 						//yea, you tell em!
 					}
 					System.out.println(checkRooms);
+					// think this is where the "ke" bug is
 					if (checkRooms) {
 						for (String token : tokenized) {
 							targets.add(token.toLowerCase());
