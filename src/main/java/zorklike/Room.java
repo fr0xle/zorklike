@@ -85,18 +85,18 @@ public class Room {
                     }
                     if (tempNameStorage.size()>2) {
                         if (furn.isContainer()) {
-                            iteml.add("in the " + furn.getName() + " there is " + String.join(", ",tempNameStorage) + ".");
+                            iteml.add("in the " + furn.getName() + " there is " + String.join(", ",tempNameStorage));
                         }
                         else {
-                            iteml.add("on the " + furn.getName() + " there is " + String.join(", ",tempNameStorage) + ".");
+                            iteml.add("on the " + furn.getName() + " there is " + String.join(", ",tempNameStorage));
                         }
                     }
                     else {
                         if (furn.isContainer()) {
-                            iteml.add("in the " + furn.getName() + " there is " + String.join(" ",tempNameStorage) + ".");
+                            iteml.add("in the " + furn.getName() + " there is " + String.join(" ",tempNameStorage));
                         }
                         else {
-                            iteml.add("on the " + furn.getName() + " there is " + String.join(" ",tempNameStorage) + ".");
+                            iteml.add("on the " + furn.getName() + " there is " + String.join(" ",tempNameStorage));
                         }
                     }
                 }

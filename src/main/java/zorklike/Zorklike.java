@@ -228,7 +228,9 @@ public class Zorklike {
 
 		//grabbing items
 		Command grabItem = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
+			// currently rewriting
 			List<Furniture> furnl = curRoom[0].getFurnL();
+			// start
 			for (int x=0;x<furnl.size();x++) {
 				Furniture curfurn = furnl.get(x);
 				List<Item> iteml = curfurn.getItemL();
@@ -238,7 +240,8 @@ public class Zorklike {
 				List<String> requirements = curfurn.getRequirements();
 				if (requirements==null) {
 					for (Iterator<Item> i=iteml.iterator();i.hasNext();) {
-						Item item = i.next(); 
+						Item item = i.next();
+						System.out.println(item.getName());
 						boolean itemInRoom = false;
 						if (objects==null) {
 							for (Iterator<String> y=targets.iterator();y.hasNext();) {
@@ -277,6 +280,36 @@ public class Zorklike {
 					System.out.println("It's locked. No can do, buckaroo.");
 				}
 			}
+			//end
+			if (objects==null) {
+				for (Iterator<String> x=targets.iterator();x.hasNext();) {
+					boolean itemInRoom = false;
+					String curTarget = x.next();
+					for (int y=0;y<furnl.size();y++) {
+						Furniture curfurn = furnl.get(y);
+						List<Item> iteml = curfurn.getItemL();
+						List<String> requirements = curfurn.getRequirements();
+						if (requirements==null) {
+							for (Iterator<Item> z=iteml.iterator();z.hasNext();) {
+								Item item = z.next();
+								if (containsExactWord(curTarget,item.getName())) {
+									inventory.add(item);
+									z.remove();
+									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
+									itemInRoom = true;
+									break;
+								}
+							}
+						}
+						else {
+							System.out.println("It's locked. No can do, buckaroo.");
+						}
+					}
+					if (!itemInRoom) {
+						System.out.println(redBackground + "There is no " + curTarget + " in this room." + resetFormatting);
+					}
+				}
+			}
 			return 0;
 		};
 		for (String cmd : Dictionary.obtaining) {
@@ -292,6 +325,7 @@ public class Zorklike {
 						for (Item item : inventory) {
 							if (containsExactWord(object,item.getName())) {
 								System.out.println(item.getExtendedDescription());
+								break;
 							}
 							else {
 								System.out.println("The " + object + " isn't in your inventory, sorry!");
