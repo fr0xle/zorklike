@@ -228,71 +228,52 @@ public class Zorklike {
 
 		//grabbing items
 		Command grabItem = (String action, ArrayList<String> objects, ArrayList<String> targets) -> {
-			// currently rewriting
 			List<Furniture> furnl = curRoom[0].getFurnL();
-			// start
-			for (int x=0;x<furnl.size();x++) {
-				Furniture curfurn = furnl.get(x);
-				List<Item> iteml = curfurn.getItemL();
-				if (iteml.size()==0) {
-					System.out.println("No more items to pick up here, sorry.");
-				}
-				List<String> requirements = curfurn.getRequirements();
-				if (requirements==null) {
-					for (Iterator<Item> i=iteml.iterator();i.hasNext();) {
-						Item item = i.next();
-						System.out.println(item.getName());
+			if (objects==null) {
+				if (targets!=null) {
+					for (Iterator<String> x=targets.iterator();x.hasNext();) {
 						boolean itemInRoom = false;
-						if (objects==null) {
-							for (Iterator<String> y=targets.iterator();y.hasNext();) {
-								if (containsExactWord(y.next(),item.getName())) {
-									inventory.add(item);
-									i.remove();
-									y.remove();
-									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
-									itemInRoom = true;
-									break;
+						String curTarget = x.next();
+						for (int y=0;y<furnl.size();y++) {
+							Furniture curfurn = furnl.get(y);
+							List<Item> iteml = curfurn.getItemL();
+							List<String> requirements = curfurn.getRequirements();
+							if (requirements==null) {
+								for (Iterator<Item> z=iteml.iterator();z.hasNext();) {
+									Item item = z.next();
+									if (containsExactWord(curTarget,item.getName())) {
+										inventory.add(item);
+										z.remove();
+										System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
+										itemInRoom = true;
+										break;
+									}
 								}
 							}
-							if (!itemInRoom && targets.size()!=0) {
-								System.out.println(redBackground + "There is no " + targets.get(0) + " in this room." + resetFormatting);
+							else {
+								System.out.println("It's locked. No can do, buckaroo.");
 							}
 						}
-						else {
-							for (Iterator<String> y=objects.iterator();y.hasNext();) {
-								if (containsExactWord(y.next(),item.getName())) {
-									inventory.add(item);
-									i.remove();
-									y.remove();
-									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
-									itemInRoom = true;
-									break;
-								}
-							}
-							if (!itemInRoom && objects.size()!=0) {
-								System.out.println(redBackground + "There is no " + objects.get(0) + " in this room." + resetFormatting);
-								objects.remove(0);
-							}
+						if (!itemInRoom) {
+							System.out.println(redBackground + "There is no " + curTarget + " in this room." + resetFormatting);
 						}
 					}
 				}
 				else {
-					System.out.println("It's locked. No can do, buckaroo.");
+					System.out.println("Nah");
 				}
 			}
-			//end
-			if (objects==null) {
-				for (Iterator<String> x=targets.iterator();x.hasNext();) {
+			else {
+				for (Iterator<String> x=objects.iterator();x.hasNext();) {
 					boolean itemInRoom = false;
-					String curTarget = x.next();
+					String curObject = x.next();
 					for (int y=0;y<furnl.size();y++) {
 						Furniture curfurn = furnl.get(y);
-						List<Item> iteml = curfurn.getItemL();
-						List<String> requirements = curfurn.getRequirements();
+						List<Item> iteml = curfurn.getItemL(); List<String> requirements = curfurn.getRequirements();
 						if (requirements==null) {
 							for (Iterator<Item> z=iteml.iterator();z.hasNext();) {
 								Item item = z.next();
-								if (containsExactWord(curTarget,item.getName())) {
+								if (containsExactWord(curObject,item.getName())) {
 									inventory.add(item);
 									z.remove();
 									System.out.println("You grab the " + item.getName() + " and put it into your backpack.");
@@ -306,7 +287,7 @@ public class Zorklike {
 						}
 					}
 					if (!itemInRoom) {
-						System.out.println(redBackground + "There is no " + curTarget + " in this room." + resetFormatting);
+						System.out.println(redBackground + "There is no " + curObject + " in this room." + resetFormatting);
 					}
 				}
 			}
@@ -322,14 +303,16 @@ public class Zorklike {
 				//examining an object in the inventory
 				if (targets==null) {
 					for (String object : objects) {
+						boolean itemFound = false;
 						for (Item item : inventory) {
 							if (containsExactWord(object,item.getName())) {
 								System.out.println(item.getExtendedDescription());
+								itemFound = true;
 								break;
 							}
-							else {
-								System.out.println("The " + object + " isn't in your inventory, sorry!");
-							}
+						}
+						if (!itemFound) {
+							System.out.println("The " + object + " isn't in your inventory, sorry!");
 						}
 					}
 				}
@@ -697,7 +680,7 @@ public class Zorklike {
 				boolean objAndTarg = false;
 				// if there is a splitter word, that means there is an object and a target in the sentence
 				for (String item : tokenized) {
-					System.out.println("item: " + item);
+					System.out.println(item);
 					for (String compare : Dictionary.splitters) {
 						if (item.equalsIgnoreCase(compare)) {
 							objAndTarg = true;
@@ -805,6 +788,9 @@ public class Zorklike {
 							action = "backpack";
 							objects.clear();
 							targets.clear();
+						}
+						else if (token.equalsIgnoreCase("open")) {
+							action = "open";
 						}
 					}
 
