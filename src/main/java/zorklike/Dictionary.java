@@ -9,7 +9,7 @@ public class Dictionary {
     private String[] furnNames;
     public static String[] actions = {"peer","list","go","move","find","search","look","examine","take","grab","get","unlock","open","close","drop","foreward","front","forewards","right","left","back","backward","backwards","inventory","backpack","around","use","xyzzy"};
     public static String[] useless = {"into","to","an","a","me","my","i","your","you","the","mine","at","the"};
-    public static String[] splitters = {"with","in","inside","into","on","onto","off"};
+    public static String[] splitters = {"with","in","inside","into","on","onto","off","open"};
     public static String[] flags = {"and",","};
 	  public static String[] movement = {"go","move","foreward","front","forewards","right","left","back","backward","backwards"};
     public static String[] directions = {"foreward","forewards","front","right","left","backward","backwards","back"};

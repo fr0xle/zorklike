@@ -440,7 +440,7 @@ public class Zorklike {
 			return 0;
 		};
 		commandHashMap.put("find",find);
-
+		//do this
 		//open/unlocking
 		// ok so what ya gotta do (because items and rooms can be both objects and items) is this
 		/* 
@@ -453,7 +453,13 @@ public class Zorklike {
 			//there can only be one unlocker
 			//therefore, if there are more than one unlockable, return that you cant do that.
 			//if there is at least one unlockable in the total list of targets, return the same error as before
-			int itemIsTarget = dictionary.searchItems(targets);
+			int itemIsTarget = -1;
+			if (targets!=null) {
+				itemIsTarget = dictionary.searchItems(targets);
+			}
+			else {
+				System.out.println("You need to specify something to open");
+			}
 			String openable = "";
 			ArrayList<String> unlockers = new ArrayList<>();
 			if (itemIsTarget==1) {
@@ -466,6 +472,9 @@ public class Zorklike {
 			}
 			else if (itemIsTarget==2) {
 				System.out.println("Please refrain from using openable objects as keys.");
+			}
+			else if (itemIsTarget==-1) {
+				System.out.println(redBackground + "error on opening" + resetFormatting);
 			}
 			boolean checkRooms = dictionary.searchRooms(openable);
 			boolean checkFurniture = dictionary.searchFurniture(openable);
@@ -642,7 +651,6 @@ public class Zorklike {
 			System.out.print(greenColor + "> ");
 			String input = scan.nextLine();
 			// parser logic
-			// ############ HI HI YOU NEED TO FIX THIS THE PARSER ISNT PUTTING WORDS LIKE "ke" INTO THE TARGETS/OBJECTS LIST WHICH RETURNS AN ERROR FOR COMMANDS LIKE GRAB
 			ArrayList<String> tokenized = new ArrayList<String>(Arrays.asList(input.split(" ")));
 			// delete action and all words before action after setting action variable
 			int index = -1;
@@ -684,7 +692,6 @@ public class Zorklike {
 					for (String compare : Dictionary.splitters) {
 						if (item.equalsIgnoreCase(compare)) {
 							objAndTarg = true;
-							tokenized.remove(item);
 						}
 					}
 				}
@@ -693,9 +700,14 @@ public class Zorklike {
 					ArrayList<String> targetList = new ArrayList<String>();
 					ArrayList<String> objectList= new ArrayList<String>();
 					boolean targl = true;
+					boolean swap = false;
 
 					for (String item : tokenized) {
 						if (Arrays.asList(Dictionary.splitters).contains(item.toLowerCase())) {
+							if (item.equalsIgnoreCase("open")) {
+								action="open";
+								swap=true;
+							}
 							targl=false;
 							continue;
 						}
@@ -707,13 +719,23 @@ public class Zorklike {
 						}
 					}
 					if (targetList.size() > 0) {
-						targets.addAll(targetList);
+						if (!swap) {
+							targets.addAll(targetList);
+						}
+						else {
+							objects.addAll(targetList);
+						}
 					}
 					else {
 						targets.clear();
 					}
 					if (objectList.size() > 0) {
-						objects.addAll(objectList);
+						if (!swap) {
+							objects.addAll(objectList);
+						}
+						else {
+							targets.addAll(objectList);
+						}
 					}
 					else {
 						objects.clear();
@@ -781,17 +803,11 @@ public class Zorklike {
 						else if (token.equalsIgnoreCase("backpack")) {
 							action = "inventory";
 						}
-						else if (token.equalsIgnoreCase("door")) {
-							targets.add("door");
-						}
 						else if (token.equalsIgnoreCase("backpack")) {
 							action = "backpack";
 							objects.clear();
 							targets.clear();
-						}
-						else if (token.equalsIgnoreCase("open")) {
-							action = "open";
-						}
+						}	
 					}
 
 				}
