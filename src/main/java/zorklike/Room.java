@@ -116,7 +116,12 @@ public class Room {
                         possible = true;
                     }
                     else {
-                        System.out.println("Sorry, that door's closed.");
+												int i=0;	
+                        System.out.println("Sorry, that door's closed. You need the following to open it:");
+												for (String requirement : connect.getRequirements()) {
+													i++;
+													System.out.println("        " + Zorklike.boldBlueColor + i + ": " + Zorklike.resetFormatting + requirement);
+												}
                         return false;
                     }
                 }

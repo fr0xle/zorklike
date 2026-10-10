@@ -53,14 +53,6 @@ public class Connection {
             }
             else if (Zorklike.containsExactWord(item,nextReq)) {
                 iterate1.remove();
-                Iterator<Item> iterate = Zorklike.inventory.iterator();
-                while (iterate.hasNext()) {
-                    Item currentItem = iterate.next();
-                    if (Zorklike.containsExactWord(item,currentItem.getName())) {
-                        iterate.remove();
-                        break;
-                    }
-                }
                 if (requirements.size()==0) {
                     open=true;
                 }

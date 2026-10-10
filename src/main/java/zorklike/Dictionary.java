@@ -68,24 +68,56 @@ public class Dictionary {
         return false;
     }
     public int searchItems(ArrayList<String> itemName) {
-		//2 for trying to open more than one things
-		//3 for trying to open something with something else that can be opened
-        for (int i=0;i<itemNames.length;i++) {
-					if (itemName.size() > 1) {
-						for (int y=0;y<itemName.size();y++) {
-							if (!Zorklike.containsExactWord(itemName.get(y),itemNames[i])) {
-								return 2;
-							}
+			if (itemName==null||itemName.isEmpty()) {
+				return 0;
+			}
+
+			if (itemName.size()>1) {
+				for (String item : itemName) {
+					boolean itemFound = false;
+					for (int i=0;i<itemNames.length;i++) {
+						if (itemNames[i]!=null && Zorklike.containsExactWord(item, itemNames[i])) {
+							itemFound = true;
+							break;
 						}
+						else {
+							itemFound = false;
+							break;
+						}
+					}
+					if (!itemFound) {
+						return 2;
+					}
+				}
+				return 1;
+			}
+			else {
+				String phrase = itemName.get(0);
+				for (int i=0;i<itemNames.length;i++) {
+					if (itemNames[i]!=null && Zorklike.containsExactWord(phrase,itemNames[i])) {
 						return 1;
 					}
-					else {
-            if (Zorklike.containsExactWord(itemName.get(0),itemNames[i])) {
-                return 1;
-            }
-					}
-        }
-        return 0;
+				}
+			}
+			return 0;
+		//2 for trying to open more than one things
+		//3 for trying to open something with something else that can be opened
+    //    for (int i=0;i<itemNames.length;i++) {
+		//			if (itemName.size() > 1) {
+		//				for (int y=0;y<itemName.size();y++) {
+		//					if (!Zorklike.containsExactWord(itemName.get(y),itemNames[i])) {
+		//						return 2;
+		//					}
+		//				}
+		//				return 1;
+		//			}
+		//			else {
+    //        if (Zorklike.containsExactWord(itemName.get(0),itemNames[i])) {
+    //            return 1;
+    //        }
+		//			}
+    //    }
+    //    return 0;
     }
     public boolean searchFurniture(String furnName) {
         for (int i=0;i<furnNames.length;i++) {

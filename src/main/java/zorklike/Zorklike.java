@@ -81,7 +81,7 @@ public class Zorklike {
 		//testroom2
 		rooms.add(new Room("testroom2","testing room travel","yuhhhh",new Connection("back","testroom",true,"key","axe")));
 		//testroom2 items
-		rooms.get(1).addFurniture(new Furniture("metal chest","a metal chest","A locked iron chest sits in the center of the room. You need the color gray to unlock this.",true,false,new Item(Type.RANDOM,"lint","ball of lint","A ball of lint",false,0,0,null)).addRequirements("gray"));
+		rooms.get(1).addFurniture(new Furniture("iron chest","a iron chest","A locked iron chest sits in the center of the room. You need the color gray to unlock this.",true,false,new Item(Type.RANDOM,"lint","ball of lint","A ball of lint",false,0,0,null)).addRequirements("gray"));
 
 		// behind you, testroom
 
@@ -324,6 +324,7 @@ public class Zorklike {
 					boolean furnSuccess = false;
 					//examining rooms
 					if (checkRooms) {
+						targets.removeIf(target -> target.equalsIgnoreCase("door"));
 						if (targets.size() > 1) {
 							System.out.println("You've only got one set of eyes, so you can only peer in one room. I'll only let you look at the first room you listed.");
 						}
@@ -346,7 +347,7 @@ public class Zorklike {
 						for (String target : targets) {
 							boolean isInRoom = false;
 							for (Furniture furn : furnl) {
-								if (containsExactWord(target,furn.getName())) {
+								if (containsExactWord(furn.getName(),target)) {
 									for (Furniture furnr : curRoom[0].getFurnL()) {
 										if (containsExactWord(furn.getName(),furnr.getName())) {
 											isInRoom = true;
@@ -366,8 +367,8 @@ public class Zorklike {
 													List<String> tempNameStorage = new ArrayList<String>();
 													for (Item it : citeml) {
 														String itnm = it.getName();
-														List<String> aOrAn = new ArrayList<String>(Arrays.asList(itnm.split("")));
-														if (aOrAn.get(0).toLowerCase().equals("a")||aOrAn.get(0).toLowerCase().equals("e")||aOrAn.get(0).toLowerCase().equals("i")||aOrAn.get(0).toLowerCase().equals("o")||aOrAn.get(0).toLowerCase().equals("u")) {
+														String firstLetter = itnm.substring(0,1).toLowerCase();
+														if ("aeiou".contains(firstLetter)) {
 															tempNameStorage.add("an " + itnm);
 														}
 														else {
@@ -435,7 +436,7 @@ public class Zorklike {
 				System.out.println("Find... what, exactly?");
 			}
 			else {
-				System.out.println("Not telling!!!! :D");
+				System.out.println("Not telling!!!! :P");
 			}
 			return 0;
 		};
@@ -455,6 +456,7 @@ public class Zorklike {
 			//if there is at least one unlockable in the total list of targets, return the same error as before
 			int itemIsTarget = -1;
 			if (targets!=null) {
+				targets.removeIf(target -> target.equalsIgnoreCase("door"));
 				itemIsTarget = dictionary.searchItems(targets);
 			}
 			else {
@@ -488,10 +490,12 @@ public class Zorklike {
 								//if user specifies what to use to open the door
 								for (String unlocker : unlockers) {
 									boolean itemInInv = false;
-									for (Item item : inventory) {
+									for (Iterator<Item> i=inventory.iterator();i.hasNext();) {
+										Item item = i.next();
 										if (containsExactWord(unlocker,item.getName())) {
 											itemInInv = true;
 											if (connection.useItem(unlocker)) {
+												i.remove();
 												System.out.print("You successfully used the " + unlocker + ".");	
 											}
 											else {
@@ -743,73 +747,129 @@ public class Zorklike {
 				}
 				// if there is only an object or a target
 				else {
-					boolean checkRooms = false; 
-					if (tokenized.size()>0) {
-						checkRooms = dictionary.searchRooms(tokenized.get(0).toLowerCase());
-					}
-					boolean checkItems = false;
-					if (tokenized.size()>0) {
-						if (dictionary.searchItems(tokenized) == 0) {
-							checkItems = false;
-						}
-						else if (dictionary.searchItems(tokenized) == 1 || dictionary.searchItems(tokenized) == 2) {
-							checkItems = true;
-						}
-					}
-					boolean checkFurniture = false;
-					if (tokenized.size()>1) {
-						checkFurniture = dictionary.searchFurniture(tokenized.get(0).toLowerCase());
-					}
-					if (checkFurniture && tokenized.size()>1) {
-						System.out.println("You can only interact with one piece of furniture at a time.");
+					// boolean checkRooms = false; 
+					// if (tokenized.size()>0) {
+					// 	checkRooms = dictionary.searchRooms(tokenized.get(0).toLowerCase());
+					// }
+					// boolean checkItems = false;
+					//if (tokenized.size()>0) {
+					//	if (dictionary.searchItems(tokenized) == 0) {
+					//		checkItems = false;
+					//	}
+					//	else if (dictionary.searchItems(tokenized) == 1 || dictionary.searchItems(tokenized) == 2) {
+					//		checkItems = true;
+					//	}
+					//}
+					//boolean checkFurniture = false;
+					//if (tokenized.size()>1) {
+					//	checkFurniture = dictionary.searchFurniture(tokenized.get(0).toLowerCase());
+					//}
+					//if (checkFurniture && tokenized.size()>1) {
+					//	System.out.println("You can only interact with one piece of furniture at a time.");
 						//yea, you tell em!
-					}
-					System.out.println(checkRooms);
+					//}
+					//System.out.println(checkRooms);
 					// think this is where the "ke" bug is
-					if (checkRooms) {
-						for (String token : tokenized) {
-							targets.add(token.toLowerCase());
-						}
-					}
-					else if (checkItems) {
-						for (String token : tokenized) {
-							objects.add(token.toLowerCase());
-						}
-					}
-					else if (checkFurniture) {
-						for (String token : tokenized) {
-							targets.add(token.toLowerCase());
-						}
-					}
-					for (String token : tokenized) {
-						if (token.equalsIgnoreCase("around")) {
-							action = "around";
-						}
-						else if (token.equalsIgnoreCase("foreward") || token.equalsIgnoreCase("front") || token.equalsIgnoreCase("forewards")) {
+					//if (checkRooms) {
+					//	for (String token : tokenized) {
+					//		targets.add(token.toLowerCase());
+					//	}
+					//}
+					//else if (checkItems) {
+					//	for (String token : tokenized) {
+					//		objects.add(token.toLowerCase());
+					//	}
+					//}
+					//else if (checkFurniture) {
+					//	for (String token : tokenized) {
+					//		targets.add(token.toLowerCase());
+					//	}
+					//}
+					//for (String token : tokenized) {
+					//	if (token.equalsIgnoreCase("around")) {
+					//		action = "around";
+					//	}
+					//	else if (token.equalsIgnoreCase("foreward") || token.equalsIgnoreCase("front") || token.equalsIgnoreCase("forewards")) {
+					//		action = "front";
+					//	}
+					//	else if (token.equalsIgnoreCase("backward") || token.equalsIgnoreCase("back") || token.equalsIgnoreCase("backwards")) {
+					//		action = "back";
+					//	}
+					//	else if (token.equalsIgnoreCase("left")) {
+					//		action = "left";
+					//	}
+					//	else if (token.equalsIgnoreCase("right")) {
+					//		action = "right";
+					//	}
+					//	else if (token.equalsIgnoreCase("inventory")) {
+					//		action = "inventory";
+					//	}
+					//	else if (token.equalsIgnoreCase("backpack")) {
+					//		action = "inventory";
+					//	}
+					//	else if (token.equalsIgnoreCase("backpack")) {
+					//		action = "backpack";
+					//		objects.clear();
+					//		targets.clear();
+					//	}	
+					//}
+					int i = 0;
+					while (i< tokenized.size()) {
+						String currentWord = tokenized.get(i).toLowerCase();
+						if (currentWord.matches("(?i)fore?ward?s?") || currentWord.equalsIgnoreCase("front")) {
 							action = "front";
+							i++;
+							continue;
 						}
-						else if (token.equalsIgnoreCase("backward") || token.equalsIgnoreCase("back") || token.equalsIgnoreCase("backwards")) {
+						if (currentWord.matches("(?i)back?ward?s?") || currentWord.equalsIgnoreCase("back")) {
 							action = "back";
+							i++;
+							continue;
 						}
-						else if (token.equalsIgnoreCase("left")) {
-							action = "left";
-						}
-						else if (token.equalsIgnoreCase("right")) {
-							action = "right";
-						}
-						else if (token.equalsIgnoreCase("inventory")) {
+						if (currentWord.equalsIgnoreCase("inventory") || currentWord.equalsIgnoreCase("backpack")) {
 							action = "inventory";
+							i++;
+							continue;
 						}
-						else if (token.equalsIgnoreCase("backpack")) {
-							action = "inventory";
-						}
-						else if (token.equalsIgnoreCase("backpack")) {
-							action = "backpack";
-							objects.clear();
-							targets.clear();
-						}	
-					}
 
+						String foundWord = null;
+						boolean isFurnitureOrRoom = false;
+						int matchedWordAmount = 0;
+						// match words, use entire tokenized list and remove 1 word until it makes sense
+						for (int length=tokenized.size()-i;length>0;length--) {
+							List<String> subList = tokenized.subList(i,i+length);
+							String checkingPhrase = String.join(" ",subList).toLowerCase();
+
+							if (dictionary.searchFurniture(checkingPhrase) || dictionary.searchRooms(checkingPhrase)) {
+								foundWord = checkingPhrase;
+								isFurnitureOrRoom = true;
+								matchedWordAmount = length;
+								break;
+							}
+							else if (dictionary.searchItems(new ArrayList<>(List.of(checkingPhrase)))==1||dictionary.searchItems(new ArrayList<>(List.of(checkingPhrase)))==2) {
+								foundWord = checkingPhrase;
+								matchedWordAmount = length;
+								break;
+							}
+						}
+
+						// fallback, if nothing matched, add at least something
+						if (foundWord==null) {
+							foundWord = currentWord;
+							matchedWordAmount = 1;
+						}
+
+						// give the word to either targets or objects
+						if (isFurnitureOrRoom) {
+							targets.add(foundWord);
+						}
+						else {
+							objects.add(foundWord);
+						}
+
+						// go foreward by the amount of words in the name
+						i += matchedWordAmount;
+					}
 				}
 
 				//response
